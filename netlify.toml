@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  functions = "functions"
+
+[functions]
+  node_bundler = "esbuild"
+  
+  [[redirects]]
+  from = "/submit"
+  to = "https://votre-serveur-node.herokuapp.com/submit"
+  status = 200
+  force = true
