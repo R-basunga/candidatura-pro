@@ -1,109 +1,129 @@
-require("dotenv").config();
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
-const crypto = require("crypto");
-
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3000;
+
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Configuration
-const {
-  RECAPTCHA_SECRET,
-  GOOGLE_SCRIPT_URL,
-  TOKEN_SECRET,
-  TOKEN_EXPIRY = "5m" // 5 minutes
-} = process.env;
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
 
-// Middleware pour vérifier le token
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Muitas solicitações deste IP, tente novamente mais tarde'
+});
+app.use(limiter);
+
+// Route de soumission
+app.post('/submit', [
+  body('nome').trim().notEmpty().withMessage('Nome é obrigatório'),
+  body('email').trim().isEmail().withMessage('Email inválido'),
+  body('recaptchaToken').notEmpty().withMessage('Token reCAPTCHA faltando')
+], async (req, res) => {
+  console.log("Requête reçue:", req.body);
   
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Token de autenticação não fornecido" });
+  // Validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log("Erreurs de validation:", errors.array());
+    return res.status(400).json({ errors: errors.array() });
   }
 
-  const token = authHeader.split(" ")[1];
-  
-  try {
-    const [header, payload, signature] = token.split(".");
-    const expectedSignature = crypto
-      .createHmac("sha256", TOKEN_SECRET)
-      .update(`${header}.${payload}`)
-      .digest("base64");
+  const { nome, email, skills, recaptchaToken } = req.body;
 
-    if (signature !== expectedSignature) {
-      return res.status(401).json({ error: "Token inválido" });
+  try {
+    // Vérification reCAPTCHA
+    console.log("Vérification reCAPTCHA...");
+    const recaptchaResponse = await axios.post(
+      'https://www.google.com/recaptcha/api/siteverify',
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: recaptchaToken
+        }
+      }
+    );
+
+    console.log("Réponse reCAPTCHA:", recaptchaResponse.data);
+    
+    if (!recaptchaResponse.data.success) {
+      return res.status(400).json({ 
+        message: 'Falha na verificação reCAPTCHA: ' + 
+                 (recaptchaResponse.data['error-codes'] || '').join(', ')
+      });
     }
 
-    const payloadData = JSON.parse(Buffer.from(payload, "base64").toString());
+    // Préparation des données pour Google Sheets
+    const sheetData = {
+      nome,
+      email,
+      skills: skills || '',
+      timestamp: new Date().toISOString()
+    };
+
+    // Envoi à Google Apps Script
+    console.log("Envoi à Google Apps Script:", sheetData);
+    const scriptResponse = await axios.post(
+      'https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec',
+      sheetData,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        // Important pour contourner les restrictions CORS
+        transformRequest: [(data, headers) => {
+          delete headers.common['Authorization'];
+          return JSON.stringify(data);
+        }]
+      }
+    );
+
+    console.log("Réponse Google Apps Script:", scriptResponse.data);
     
-    // Vérifier l'expiration
-    if (payloadData.exp < Date.now() / 1000) {
-      return res.status(401).json({ error: "Token expirado" });
+    if (scriptResponse.data.result !== 'success') {
+      throw new Error('Erro no Google Apps Script: ' + 
+                     (scriptResponse.data.message || ''));
     }
 
-    next();
+    res.json({ success: true, message: 'Dados salvos com sucesso!' });
   } catch (error) {
-    return res.status(401).json({ error: "Token inválido" });
-  }
-};
-
-// Endpoint pour obtenir un token
-app.get("/get-token", (req, res) => {
-  try {
-    const header = Buffer.from(JSON.stringify({
-      alg: "HS256",
-      typ: "JWT"
-    })).toString("base64");
-
-    const payload = Buffer.from(JSON.stringify({
-      exp: Math.floor(Date.now() / 1000) + (parseInt(TOKEN_EXPIRY) * 60),
-      iat: Math.floor(Date.now() / 1000)
-    })).toString("base64");
-
-    const signature = crypto
-      .createHmac("sha256", TOKEN_SECRET)
-      .update(`${header}.${payload}`)
-      .digest("base64");
-
-    const token = `${header}.${payload}.${signature}`;
+    console.error('Erro completo:', error);
     
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar token" });
+    let errorMessage = 'Erro interno do servidor';
+    if (error.response) {
+      console.error('Dados da resposta de erro:', error.response.data);
+      errorMessage = error.response.data.message || 
+                    error.response.data.error || 
+                    JSON.stringify(error.response.data);
+    }
+    
+    res.status(500).json({ 
+      message: errorMessage,
+      details: error.message
+    });
   }
 });
 
-// Endpoint pour soumettre le formulaire
-app.post("/submit", verifyToken, async (req, res) => {
-  try {
-    // Vérification reCAPTCHA
-    const { recaptchaToken, ...formData } = req.body;
-    
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`;
-    const { data: captchaRes } = await axios.post(verifyUrl);
-    
-    if (!captchaRes.success) {
-      return res.status(400).json({ error: "Falha na verificação reCAPTCHA" });
-    }
-
-    // Envoi à Google Apps Script
-    const response = await axios.post(GOOGLE_SCRIPT_URL, {
-      ...formData,
-      timestamp: new Date().toISOString()
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error("Erro no proxy:", error.message);
-    res.status(500).json({ error: "Erro interno do servidor" });
-  }
+// Route de test
+app.get('/test', (req, res) => {
+  res.json({
+    status: 'online',
+    timestamp: new Date(),
+    recaptcha: !!process.env.RECAPTCHA_SECRET_KEY
+  });
 });
 
 // Démarrage du serveur
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor proxy rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Test endpoint: http://localhost:${PORT}/test`);
 });
