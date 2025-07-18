@@ -323,7 +323,7 @@
   <!-- Script de envio seguro -->
   <script>
     
-    ddocument.getElementById("formulario").addEventListener("submit", async function(e) {
+    document.getElementById("formulario").addEventListener("submit", async function(e) {
       e.preventDefault();
       const form = e.target;
       const submitButton = form.querySelector('button[type="submit"]');
@@ -332,6 +332,7 @@
       // Afficher le loader
       submitButton.disabled = true;
       submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Enviando...';
+      console.log("Début de la soumission du formulaire");
 
       try {
         // Vérifier reCAPTCHA
@@ -339,35 +340,41 @@
         if (!recaptchaToken) {
           throw new Error("Por favor, confirme que você não é um robô.");
         }
+        console.log("reCAPTCHA validé");
 
-        // Valider les champs
-        const nome = form.nome.value.trim();
-        const email = form.email.value.trim();
-        const skills = form.skills.value.trim();
-        
-        if (!nome || !email) {
+        // Collecter les données
+        const formData = {
+          nome: form.nome.value.trim(),
+          email: form.email.value.trim(),
+          skills: form.skills.value.trim(),
+          recaptchaToken
+        };
+
+        // Validation frontale
+        if (!formData.nome || !formData.email) {
           throw new Error("Por favor, preencha todos os campos obrigatórios.");
         }
+        console.log("Données validées:", formData);
 
-        // Envoyer à Node.js pour validation supplémentaire
+        // Envoyer au serveur
         const response = await fetch('/submit', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            nome,
-            email,
-            skills,
-            recaptchaToken
-          })
+          body: JSON.stringify(formData)
         });
+        
+        console.log("Réponse du serveur:", response.status);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Erro no servidor");
+        }
 
         const result = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(result.message || "Erro no servidor");
-        }
+        console.log("Réponse complète du serveur:", result);
+
         // Afficher le message de succès
         form.innerHTML = `
           <div class="success-card bg-green-50 p-8 rounded-xl text-center">
@@ -384,11 +391,13 @@
         `;
         
       } catch (err) {
-        // Afficher le message d'erreur
+        console.error("Erreur:", err);
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message bg-red-50 text-red-700 p-4 rounded-lg mb-4 text-center';
         errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${err.message}`;
-        form.insertBefore(errorDiv, submitButton);
+        
+        // Insérer après le formulaire
+        form.parentNode.insertBefore(errorDiv, form.nextSibling);
         
         // Faire défiler jusqu'à l'erreur
         errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
