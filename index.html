@@ -322,10 +322,8 @@
 
   <!-- Script de envio seguro -->
   <script>
-    // SECRET_TOKEN - À changer dans votre déploiement réel
-    const SECRET_TOKEN = "JhoD28ys@PB@ZN47KBkJP";
     
-    document.getElementById("formulario").addEventListener("submit", async function(e) {
+    ddocument.getElementById("formulario").addEventListener("submit", async function(e) {
       e.preventDefault();
       const form = e.target;
       const submitButton = form.querySelector('button[type="submit"]');
@@ -334,7 +332,6 @@
       // Afficher le loader
       submitButton.disabled = true;
       submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Enviando...';
-      submitButton.classList.add('opacity-80');
 
       try {
         // Vérifier reCAPTCHA
@@ -343,37 +340,34 @@
           throw new Error("Por favor, confirme que você não é um robô.");
         }
 
-        // Construire les données avec token secret
-        const formData = {
-          nome: form.nome.value.trim(),
-          email: form.email.value.trim(),
-          skills: form.skills.value.trim(),
-          recaptchaToken: recaptchaToken,
-          secret: SECRET_TOKEN
-        };
-
-        // Valider les données
-        if (!formData.nome || !formData.email) {
+        // Valider les champs
+        const nome = form.nome.value.trim();
+        const email = form.email.value.trim();
+        const skills = form.skills.value.trim();
+        
+        if (!nome || !email) {
           throw new Error("Por favor, preencha todos os campos obrigatórios.");
         }
 
-        // Envoyer à Google Sheets via Apps Script
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec';
-        
-        const response = await fetch(SCRIPT_URL, {
+        // Envoyer à Node.js pour validation supplémentaire
+        const response = await fetch('/submit', {
           method: 'POST',
-          body: JSON.stringify(formData),
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({
+            nome,
+            email,
+            skills,
+            recaptchaToken
+          })
         });
-        
+
         const result = await response.json();
         
-        if (result.result !== 'success') {
-          throw new Error("Ocorreu um erro ao enviar sua candidatura. Por favor, tente novamente.");
+        if (!response.ok) {
+          throw new Error(result.message || "Erro no servidor");
         }
-
         // Afficher le message de succès
         form.innerHTML = `
           <div class="success-card bg-green-50 p-8 rounded-xl text-center">
@@ -403,10 +397,8 @@
       } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
-        submitButton.classList.remove('opacity-80');
       }
     });
   </script>
-  
 </body>
 </html>
