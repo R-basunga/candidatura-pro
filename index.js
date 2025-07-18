@@ -13,51 +13,21 @@ const {
   RECAPTCHA_SECRET,
   GOOGLE_SCRIPT_URL,
   TOKEN_SECRET,
-  TOKEN_EXPIRY = 300 // 5 minutes
+  TOKEN_EXPIRY = "5m" // 5 minutes
 } = process.env;
 
-// Génération de token JWT
-const generateToken = () => {
-  const header = Buffer.from(JSON.stringify({
-    alg: "HS256",
-    typ: "JWT"
-  })).toString("base64");
-
-  const payload = Buffer.from(JSON.stringify({
-    exp: Math.floor(Date.now() / 1000) + Number(TOKEN_EXPIRY),
-    iat: Math.floor(Date.now() / 1000)
-  })).toString("base64");
-
-  const signature = crypto
-    .createHmac("sha256", TOKEN_SECRET)
-    .update(`${header}.${payload}`)
-    .digest("base64");
-
-  return `${header}.${payload}.${signature}`;
-};
-
-// Endpoint pour obtenir un token
-app.get("/get-token", (req, res) => {
-  try {
-    const token = generateToken();
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar token" });
+// Middleware pour vérifier le token
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Token de autenticação não fornecido" });
   }
-});
 
-// Soumission du formulaire
-app.post("/submit", async (req, res) => {
+  const token = authHeader.split(" ")[1];
+  
   try {
-    // Vérification du token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Token inválido" });
-    }
-
-    const token = authHeader.split(" ")[1];
     const [header, payload, signature] = token.split(".");
-    
     const expectedSignature = crypto
       .createHmac("sha256", TOKEN_SECRET)
       .update(`${header}.${payload}`)
@@ -67,17 +37,54 @@ app.post("/submit", async (req, res) => {
       return res.status(401).json({ error: "Token inválido" });
     }
 
-    // Vérification de l'expiration
     const payloadData = JSON.parse(Buffer.from(payload, "base64").toString());
+    
+    // Vérifier l'expiration
     if (payloadData.exp < Date.now() / 1000) {
       return res.status(401).json({ error: "Token expirado" });
     }
 
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Token inválido" });
+  }
+};
+
+// Endpoint pour obtenir un token
+app.get("/get-token", (req, res) => {
+  try {
+    const header = Buffer.from(JSON.stringify({
+      alg: "HS256",
+      typ: "JWT"
+    })).toString("base64");
+
+    const payload = Buffer.from(JSON.stringify({
+      exp: Math.floor(Date.now() / 1000) + (parseInt(TOKEN_EXPIRY) * 60),
+      iat: Math.floor(Date.now() / 1000)
+    })).toString("base64");
+
+    const signature = crypto
+      .createHmac("sha256", TOKEN_SECRET)
+      .update(`${header}.${payload}`)
+      .digest("base64");
+
+    const token = `${header}.${payload}.${signature}`;
+    
+    res.json({ token });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao gerar token" });
+  }
+});
+
+// Endpoint pour soumettre le formulaire
+app.post("/submit", verifyToken, async (req, res) => {
+  try {
     // Vérification reCAPTCHA
     const { recaptchaToken, ...formData } = req.body;
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`;
     
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`;
     const { data: captchaRes } = await axios.post(verifyUrl);
+    
     if (!captchaRes.success) {
       return res.status(400).json({ error: "Falha na verificação reCAPTCHA" });
     }
