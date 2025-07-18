@@ -323,6 +323,8 @@
   <!-- Script de envio seguro -->
   <script>
     
+    const BACKEND_URL = 'https://candidaturas.netlify.app/'; // Remplacez par votre URL backend
+
     document.getElementById("formulario").addEventListener("submit", async function(e) {
       e.preventDefault();
       const form = e.target;
@@ -332,7 +334,6 @@
       // Afficher le loader
       submitButton.disabled = true;
       submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Enviando...';
-      console.log("Début de la soumission du formulaire");
 
       try {
         // Vérifier reCAPTCHA
@@ -340,7 +341,6 @@
         if (!recaptchaToken) {
           throw new Error("Por favor, confirme que você não é um robô.");
         }
-        console.log("reCAPTCHA validé");
 
         // Collecter les données
         const formData = {
@@ -354,10 +354,9 @@
         if (!formData.nome || !formData.email) {
           throw new Error("Por favor, preencha todos os campos obrigatórios.");
         }
-        console.log("Données validées:", formData);
 
         // Envoyer au serveur
-        const response = await fetch('/submit', {
+        const response = await fetch(`${BACKEND_URL}/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -365,15 +364,10 @@
           body: JSON.stringify(formData)
         });
         
-        console.log("Réponse du serveur:", response.status);
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Erro no servidor");
         }
-
-        const result = await response.json();
-        console.log("Réponse complète du serveur:", result);
 
         // Afficher le message de succès
         form.innerHTML = `
@@ -391,7 +385,6 @@
         `;
         
       } catch (err) {
-        console.error("Erreur:", err);
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message bg-red-50 text-red-700 p-4 rounded-lg mb-4 text-center';
         errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${err.message}`;
