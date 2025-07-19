@@ -1,12 +1,6 @@
 [build]
-  command = "npm run build"
-  functions = "functions"
+  publish = "."
+  functions = "netlify/functions"
 
-[functions]
-  node_bundler = "esbuild"
-  
-  [[redirects]]
-  from = "/submit"
-  to = "https://votre-serveur-node.herokuapp.com/submit"
-  status = 200
-  force = true
+[dev]
+  functionsPort = 8888

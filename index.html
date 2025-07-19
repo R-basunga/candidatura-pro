@@ -8,341 +8,27 @@
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-    }
-    .header-gradient {
-      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    }
-    .project-card {
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    .project-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-    .form-container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
-    .form-input:focus {
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-    }
-    .submit-btn {
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
-    }
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
-    }
-    .submit-btn:active {
-      transform: translateY(1px);
-    }
-    .success-card {
-      animation: fadeIn 0.5s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .footer-bg {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    }
-    .error-message {
-      animation: shake 0.5s;
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
-    .security-badge {
-      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-      border-radius: 9999px;
-    }
+    /* Your existing styles... */
   </style>
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col">
-  <!-- Cabeçalho -->
-  <header class="header-gradient text-white shadow-lg py-8">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h1 class="text-3xl md:text-4xl font-bold mb-3">
-        Junta-te aos projetos <span class="text-yellow-300">VendaJá</span> & 
-        <span class="text-green-300">Bumba</span>
-      </h1>
-      <p class="text-lg max-w-2xl mx-auto opacity-90">
-        Uma aventura colaborativa para criar soluções digitais locais
-      </p>
-      <div class="mt-6">
-        <div class="w-20 h-1 bg-blue-300 mx-auto rounded-full"></div>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto mt-10 px-4 flex-grow">
-    <!-- Banner de Destaque -->
-    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white text-center mb-10 shadow-lg">
-      <div class="max-w-2xl mx-auto">
-        <i class="fas fa-handshake fa-3x mb-4 opacity-80"></i>
-        <h2 class="text-2xl font-bold mb-3">Faça parte da revolução digital angolana!</h2>
-        <p class="opacity-90">Estamos construindo soluções tecnológicas para empoderar comunidades locais e transformar o mercado angolano.</p>
-        
-        <!-- Badge de Segurança -->
-        <div class="inline-flex items-center security-badge px-4 py-2 mt-4">
-          <i class="fas fa-shield-alt mr-2"></i>
-          <span>Dados protegidos com criptografia</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Seção de Projetos -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold text-center text-blue-800 mb-2">Os Nossos Projetos</h2>
-      <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Plataformas inovadoras desenvolvidas para resolver problemas reais no mercado angolano</p>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Projeto VendaJá -->
-        <div class="project-card bg-white p-6 rounded-xl border-l-4 border-yellow-500">
-          <div class="flex items-start">
-            <div class="bg-yellow-100 p-3 rounded-full mr-4">
-              <i class="fas fa-tags text-yellow-600 text-2xl"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-yellow-600 mb-2">VendaJá</h3>
-              <p class="text-gray-700 mb-4">
-                Plataforma de anúncios multilíngue para compra, venda e aluguer. 
-                Rápida, acessível e centrada no utilizador.
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Mercado Digital</span>
-                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Angola</span>
-                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Comércio Local</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Projeto Bumba -->
-        <div class="project-card bg-white p-6 rounded-xl border-l-4 border-green-500">
-          <div class="flex items-start">
-            <div class="bg-green-100 p-3 rounded-full mr-4">
-              <i class="fas fa-briefcase text-green-600 text-2xl"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-green-600 mb-2">Bumba</h3>
-              <p class="text-gray-700 mb-4">
-                Portal de emprego que liga candidatos e empregadores, com painel 
-                de administração e suporte multilíngue.
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Emprego</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Conexões</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Desenvolvimento</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefícios -->
-    <section class="mb-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl">
-      <h2 class="text-2xl font-bold text-center text-blue-800 mb-2">Por que te juntar a nós?</h2>
-      <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Descubra as vantagens de fazer parte desta iniciativa inovadora</p>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm text-center">
-          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-rocket text-blue-600 text-2xl"></i>
-          </div>
-          <h3 class="text-lg font-semibold mb-2">Projetos Reais</h3>
-          <p class="text-gray-600 text-sm">Trabalhe em soluções com impacto real no mercado angolano.</p>
-        </div>
-        
-        <div class="bg-white p-5 rounded-xl shadow-sm text-center">
-          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-users text-blue-600 text-2xl"></i>
-          </div>
-          <h3 class="text-lg font-semibold mb-2">Aprendizado em Equipe</h3>
-          <p class="text-gray-600 text-sm">Colabore com desenvolvedores apaixonados por tecnologia.</p>
-        </div>
-        
-        <div class="bg-white p-5 rounded-xl shadow-sm text-center">
-          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-globe-africa text-blue-600 text-2xl"></i>
-          </div>
-          <h3 class="text-lg font-semibold mb-2">Impacto Social</h3>
-          <p class="text-gray-600 text-sm">Contribua para o desenvolvimento digital de Angola.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Formulário de Inscrição -->
-    <section class="mb-16">
-      <div class="form-container max-w-2xl mx-auto">
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 px-6 text-white text-center">
-          <h3 class="text-2xl font-bold mb-2">Formulário de Inscrição</h3>
-          <p>Preencha o formulário para se juntar à nossa equipe</p>
-          <div class="mt-2 flex items-center justify-center text-sm">
-            <i class="fas fa-lock mr-2"></i>
-            <span>Dados protegidos com criptografia</span>
-          </div>
-        </div>
-        
-        <div class="p-6 md:p-8">
-          <form id="formulario" class="space-y-5">
-            <div>
-              <label for="nome" class="block text-sm font-medium text-gray-700 mb-1">Nome completo *</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-user text-gray-400"></i>
-                </div>
-                <input type="text" id="nome" name="nome" class="form-input w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none" placeholder="Seu nome completo" required>
-              </div>
-            </div>
-            
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-envelope text-gray-400"></i>
-                </div>
-                <input type="email" id="email" name="email" class="form-input w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none" placeholder="seu.email@exemplo.com" required>
-              </div>
-            </div>
-            
-            <div>
-              <label for="skills" class="block text-sm font-medium text-gray-700 mb-1">Habilidades ou interesses</label>
-              <div class="relative">
-                <div class="absolute top-3 left-3">
-                  <i class="fas fa-code text-gray-400"></i>
-                </div>
-                <textarea id="skills" name="skills" rows="3" class="form-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Descreva suas habilidades, tecnologias que domina, áreas de interesse..."></textarea>
-              </div>
-            </div>
-
-            <!-- reCAPTCHA v2 widget -->
-            <div class="g-recaptcha flex justify-center" data-sitekey="6LeCGYYrAAAAALt4pEaWg0KAxuY7R1-NKDHVWRy0"></div>
-
-            <button type="submit" class="submit-btn w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 px-4 rounded-lg flex items-center justify-center mt-2">
-              <i class="fas fa-paper-plane mr-3"></i>
-              Enviar candidatura
-            </button>
-          </form>
-          
-          <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p class="text-gray-600">
-              Prefere contactar diretamente?
-              <a href="https://www.linkedin.com/in/basunga-jermias" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center ml-1">
-                <i class="fab fa-linkedin mr-1"></i> LinkedIn
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Rodapé -->
-  <footer class="footer-bg text-gray-300 py-12">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <div class="flex items-center mb-4">
-            <div class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-              <i class="fas fa-code text-white"></i>
-            </div>
-            <h4 class="text-xl font-bold text-white">VendaJá & Bumba</h4>
-          </div>
-          <p class="mb-3">Soluções digitais para transformar o mercado angolano</p>
-          <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-white">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-white">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="https://www.linkedin.com/in/basunga-jermias" target="_blank" class="text-gray-400 hover:text-white">
-              <i class="fab fa-linkedin-in"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-white">
-              <i class="fab fa-github"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div>
-          <h4 class="text-lg font-semibold text-white mb-4">Nossos Projetos</h4>
-          <ul class="space-y-2">
-            <li>
-              <a href="#" class="text-gray-400 hover:text-white transition flex items-center">
-                <i class="fas fa-chevron-right text-xs mr-2 text-blue-400"></i> VendaJá - Plataforma de Anúncios
-              </a>
-            </li>
-            <li>
-              <a href="#" class="text-gray-400 hover:text-white transition flex items-center">
-                <i class="fas fa-chevron-right text-xs mr-2 text-blue-400"></i> Bumba - Portal de Emprego
-              </a>
-            </li>
-            <li>
-              <a href="#" class="text-gray-400 hover:text-white transition flex items-center">
-                <i class="fas fa-chevron-right text-xs mr-2 text-blue-400"></i> TechEduca Angola
-              </a>
-            </li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="text-lg font-semibold text-white mb-4">Contactos</h4>
-          <ul class="space-y-3">
-            <li class="flex items-start">
-              <i class="fas fa-envelope text-blue-400 mt-1 mr-3"></i>
-              <span>jbkfrostb@gmail.com</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fas fa-map-marker-alt text-blue-400 mt-1 mr-3"></i>
-              <span>Luanda, Angola</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="mt-12 pt-8 border-t border-gray-700 text-center">
-        <p>&copy; 2025 Jeremias Basunga. Todos os direitos reservados.</p>
-        <p class="mt-2 text-sm text-gray-500">Projetos VendaJá & Bumba - Transformando o futuro digital de Angola</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Script de envio seguro -->
+  <!-- ... your existing HTML ... -->
   <script>
-    
-    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec'; // Remplacez par votre URL backend
+    const BACKEND_URL = '/.netlify/functions/submit';
 
     document.getElementById("formulario").addEventListener("submit", async function(e) {
       e.preventDefault();
       const form = e.target;
       const submitButton = form.querySelector('button[type="submit"]');
       const originalButtonText = submitButton.innerHTML;
-      
-      // Afficher le loader
+
       submitButton.disabled = true;
       submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Enviando...';
 
       try {
-        // Vérifier reCAPTCHA
         const recaptchaToken = grecaptcha.getResponse();
-        if (!recaptchaToken) {
-          throw new Error("Por favor, confirme que você não é um robô.");
-        }
+        if (!recaptchaToken) throw new Error("Por favor, confirme que você não é um robô.");
 
-        // Collecter les données
         const formData = {
           nome: form.nome.value.trim(),
           email: form.email.value.trim(),
@@ -350,38 +36,19 @@
           recaptchaToken
         };
 
-        // Validation frontale
-        if (!formData.nome || !formData.email) {
-          throw new Error("Por favor, preencha todos os campos obrigatórios.");
-        }
+        if (!formData.nome || !formData.email) throw new Error("Por favor, preencha todos os campos obrigatórios.");
 
-        // Envoyer au serveur
-        const response = await fetch(`${BACKEND_URL}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json' // Explicitement demander du JSON
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include' // Si vous utilisez des cookies/sessions
-      });
+        const response = await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-      // Vérification approfondie de la réponse
-      if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        
-        if (contentType?.includes('text/html')) {
-          const htmlError = await response.text();
-          throw new Error(`Le serveur a renvoyé du HTML: ${htmlError.substring(0, 300)}`);
-        } else {
+        if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+          throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
         }
-      }
 
-          const data = await response.json();
-
-        // Afficher le message de succès
         form.innerHTML = `
           <div class="success-card bg-green-50 p-8 rounded-xl text-center">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -395,18 +62,12 @@
             </button>
           </div>
         `;
-        
       } catch (err) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message bg-red-50 text-red-700 p-4 rounded-lg mb-4 text-center';
         errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${err.message}`;
-        
-        // Insérer après le formulaire
         form.parentNode.insertBefore(errorDiv, form.nextSibling);
-        
-        // Faire défiler jusqu'à l'erreur
         errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
         grecaptcha.reset();
       } finally {
         submitButton.disabled = false;

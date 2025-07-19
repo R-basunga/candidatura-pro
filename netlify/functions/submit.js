@@ -1,25 +1,24 @@
-const axios = require("axios");
+const axios = require('axios');
 
 exports.handler = async (event) => {
-  const { nome, email, recaptchaToken } = JSON.parse(event.body);
+  try {
+    const { nome, email, skills, recaptchaToken } = JSON.parse(event.body);
+    if (!nome || !email) {
+      return { statusCode: 400, body: JSON.stringify({ success: false, message: 'Nome e email são obrigatórios' }) };
+    }
 
-  // 1. Vérifier reCAPTCHA
-  const recaptchaUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`;
-  const recaptchaRes = await axios.post(recaptchaUrl);
+    const recaptchaResp = await axios.post(
+      'https://www.google.com/recaptcha/api/siteverify', null,
+      { params: { secret: process.env.RECAPTCHA_SECRET, response: recaptchaToken } }
+    );
+    if (!recaptchaResp.data.success) {
+      return { statusCode: 400, body: JSON.stringify({ message: 'Falha reCAPTCHA' }) };
+    }
 
-  if (!recaptchaRes.data.success) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "reCAPTCHA invalide" }),
-    };
+    await axios.post(process.env.GOOGLE_SCRIPT_URL, { nome, email, skills, timestamp: new Date().toISOString() });
+
+    return { statusCode: 200, body: JSON.stringify({ success: true }) };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ message: err.message }) };
   }
-
-  // 2. Envoyer à Google Sheets (via Apps Script)
-  const googleScriptUrl = process.env.'https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec';
-  await axios.post(googleScriptUrl, { nome, email });
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ success: true }),
-  };
 };
