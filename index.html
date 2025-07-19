@@ -323,7 +323,7 @@
   <!-- Script de envio seguro -->
   <script>
     
-    const BACKEND_URL = 'https://candidaturas.netlify.app/'; // Remplacez par votre URL backend
+    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec'; // Remplacez par votre URL backend
 
     document.getElementById("formulario").addEventListener("submit", async function(e) {
       e.preventDefault();
@@ -357,17 +357,29 @@
 
         // Envoyer au serveur
         const response = await fetch(`${BACKEND_URL}/submit`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' // Explicitement demander du JSON
+        },
+        body: JSON.stringify(formData),
+        credentials: 'include' // Si vous utilisez des cookies/sessions
+      });
+
+      // Vérification approfondie de la réponse
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro no servidor");
+        if (contentType?.includes('text/html')) {
+          const htmlError = await response.text();
+          throw new Error(`Le serveur a renvoyé du HTML: ${htmlError.substring(0, 300)}`);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
         }
+      }
+
+          const data = await response.json();
 
         // Afficher le message de succès
         form.innerHTML = `

@@ -5,19 +5,22 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Middleware critiques
+app.use(cors({
+  origin: ['https://candidaturas.netlify.app', 'http://localhost:3000','https://script.google.com/macros/s/AKfycbxLg8aXgF0uVJ6sBvjR1yFqYdTd7jK2Zt1oX5mzqS0/exec'],
+  credentials: true
+}));
 app.use(express.json());
 
-// Route de soumission
+// Route corrigée
 app.post('/submit', async (req, res) => {
+  const { nome, email, skills, recaptchaToken } = req.body;
   try {
-    const { nome, email, skills, recaptchaToken } = req.body;
-
-    // Validation
-    if (!nome || !email || !recaptchaToken) {
+    // Valider les données
+    if (!req.body.nome || !req.body.email) {
       return res.status(400).json({ 
-        message: 'Por favor, preencha todos os campos obrigatórios.' 
+        success: false,
+        message: 'Nome e email são obrigatórios' 
       });
     }
 
