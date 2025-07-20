@@ -1,6 +1,11 @@
 [build]
-  publish = "."
+  publish   = "."
   functions = "netlify/functions"
 
 [dev]
   functionsPort = 8888
+
+[[redirects]]
+  from   = "/submit"
+  to     = "/.netlify/functions/submit"
+  status = 200

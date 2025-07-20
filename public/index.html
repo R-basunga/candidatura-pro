@@ -304,57 +304,43 @@
       e.preventDefault();
       const form = e.target;
       const submitButton = form.querySelector('button[type="submit"]');
-      const originalButtonText = submitButton.innerHTML;
-      
-      // Afficher le loader
+      const originalText = submitButton.innerHTML;
+
+      // Affiche le loader
       submitButton.disabled = true;
-      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Enviando...';
-      submitButton.classList.add('opacity-80');
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
 
       try {
-        // Verificar reCAPTCHA
         const recaptchaToken = grecaptcha.getResponse();
         if (!recaptchaToken) {
           throw new Error("Por favor, confirme que você não é um robô.");
         }
 
-        // Obter token de autenticação
-        const tokenResponse = await fetch('/get-token');
-        if (!tokenResponse.ok) {
-          throw new Error("Erro ao obter token de autenticação");
-        }
-        const { token } = await tokenResponse.json();
-
-        // Construir os dados
+        // Collecte les données
         const formData = {
-          nome: form.nome.value.trim(),
+          nome:  form.nome.value.trim(),
           email: form.email.value.trim(),
           skills: form.skills.value.trim(),
-          recaptchaToken: recaptchaToken
+          recaptchaToken
         };
 
-        // Validar dados
         if (!formData.nome || !formData.email) {
           throw new Error("Por favor, preencha todos os campos obrigatórios.");
         }
 
-        // Enviar dados para o servidor proxy
-        const response = await fetch('/submit', {
+        const response = await fetch('/.netlify/functions/submit', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
 
         const result = await response.json();
-        
+
         if (!response.ok) {
-          throw new Error(result.error || "Ocorreu um erro ao enviar sua candidatura.");
+          throw new Error(result.message || "Ocorreu um erro ao enviar sua candidatura.");
         }
 
-        // Mostrar mensagem de sucesso
+        // Succès
         form.innerHTML = `
           <div class="success-card bg-green-50 p-8 rounded-xl text-center">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -366,20 +352,15 @@
             <button onclick="location.reload()" class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
               <i class="fas fa-plus-circle mr-2"></i> Enviar outra candidatura
             </button>
-          </div>
-        `;
-        
+          </div>`;
       } catch (err) {
         alert(err.message);
         grecaptcha.reset();
       } finally {
         submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonText;
-        submitButton.classList.remove('opacity-80');
+        submitButton.innerHTML = originalText;
       }
     });
-    // Après app.use(express.json());
-    app.use(express.static("public"));  
   </script>
   
 </body>
